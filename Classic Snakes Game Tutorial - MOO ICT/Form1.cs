@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media;
 
 using System.Drawing.Imaging; // add this for the JPG compressor
 
-namespace Classic_Snakes_Game_Tutorial___MOO_ICT
+namespace OOPETRIS
 {
     public partial class Form1 : Form
     {
@@ -32,29 +33,25 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
         public Form1()
         {
             InitializeComponent();
-
             new Settings();
+            this.KeyPreview = true;
+            this.Shown += Form1_Shown;
         }
 
         private void KeyIsDown(object sender, KeyEventArgs e)
         {
 
-            if (e.KeyCode == Keys.Left && Settings.directions != "right")
-            {
+            if ((e.KeyCode == Keys.Left || e.KeyCode == Keys.A) && Settings.directions != "right")
                 goLeft = true;
-            }
-            if (e.KeyCode == Keys.Right && Settings.directions != "left")
-            {
+
+            if ((e.KeyCode == Keys.Right || e.KeyCode == Keys.D) && Settings.directions != "left")
                 goRight = true;
-            }
-            if (e.KeyCode == Keys.Up && Settings.directions != "down")
-            {
+
+            if ((e.KeyCode == Keys.Up || e.KeyCode == Keys.W) && Settings.directions != "down")
                 goUp = true;
-            }
-            if (e.KeyCode == Keys.Down && Settings.directions != "up")
-            {
+
+            if ((e.KeyCode == Keys.Down || e.KeyCode == Keys.S) && Settings.directions != "up")
                 goDown = true;
-            }
 
 
 
@@ -62,27 +59,26 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
 
         private void KeyIsUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Left)
-            {
-                goLeft = false;
-            }
-            if (e.KeyCode == Keys.Right)
-            {
+            if(e.KeyCode == Keys.Left || e.KeyCode == Keys.A)
+        goLeft = false;
+            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D)
                 goRight = false;
-            }
-            if (e.KeyCode == Keys.Up)
-            {
+            if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
                 goUp = false;
-            }
-            if (e.KeyCode == Keys.Down)
-            {
+            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
                 goDown = false;
-            }
         }
 
         private void StartGame(object sender, EventArgs e)
         {
             RestartGame();
+            startButton.Visible = false;
+            gameTimer.Start();
+
+            // Remove focus from the button so the form receives key presses
+            this.ActiveControl = null;
+            this.Focus();
+
         }
 
         private void TakeSnapShot(object sender, EventArgs e)
@@ -223,7 +219,7 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
                 }
                 else
                 {
-                    snakeColour = Brushes.DarkGreen;
+                    snakeColour = Brushes.Gray;
                 }
 
                 canvas.FillEllipse(snakeColour, new Rectangle
@@ -241,6 +237,36 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
             food.Y * Settings.Height,
             Settings.Width, Settings.Height
             ));
+            // Draw score manually on top-left corner
+            Font font = new Font("Arial", 12, FontStyle.Bold);
+            Brush brush = Brushes.Black;
+            canvas.DrawString("SCORE: " + score, font, brush, new PointF(5, 15));
+            canvas.DrawString("HIGH SCORE: " + highScore, font, brush, new PointF(5, 35));
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            retryButton.Visible = false;  // hide retry button again
+            RestartGame();                // reset everything and start again
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Form2 menu = new Form2();
+            menu.Show();
+        }
+
+        private void btnMenu_Click(object sender, EventArgs e)
+        {
+            this.Hide();              // hide game
+            gameTimer.Stop();         // stop movement so it won’t freeze
+            Form2 menu = new Form2();
+            menu.Show();
         }
 
         private void RestartGame()
@@ -267,6 +293,7 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
             food = new Circle { X = rand.Next(2, maxWidth), Y = rand.Next(2, maxHeight)};
 
             gameTimer.Start();
+            gameTimer.Interval = initialInterval;  // reset speed
 
         }
 
@@ -285,26 +312,76 @@ namespace Classic_Snakes_Game_Tutorial___MOO_ICT
             Snake.Add(body);
 
             food = new Circle { X = rand.Next(2, maxWidth), Y = rand.Next(2, maxHeight) };
-
+            if (gameTimer.Interval > 30) // minimum speed
+            {
+                gameTimer.Interval -= speedIncrement;
+            }
+            // Play eat sound effect
+            try
+            {
+                string soundPath = @"C:\Users\MSI-Pc\Downloads\food_G1U6tlb.wav"; // full path
+                SoundPlayer eatSound = new SoundPlayer(soundPath);
+                eatSound.Play(); // plays once asynchronously
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eat sound not found: " + ex.Message);
+            }
 
         }
 
         private void GameOver()
         {
-            gameTimer.Stop();
+            gameTimer.Stop();            // stop the game
+            retryButton.Visible = true;  // show retry button
+
             startButton.Enabled = true;
             snapButton.Enabled = true;
 
             if (score > highScore)
             {
                 highScore = score;
-
                 txtHighScore.Text = "High Score: " + Environment.NewLine + highScore;
                 txtHighScore.ForeColor = Color.Maroon;
                 txtHighScore.TextAlign = ContentAlignment.MiddleCenter;
             }
         }
+        public void StopGame()
+        {
+            gameTimer.Stop();     // stop snake movement timer
+            gameTimer.Dispose();  // optional, fully dispose
+        }
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            this.Focus(); // ensures the form receives key presses
+        }
 
+        private void picCanvas_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtHighScore_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtScore_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
+            {
+                KeyIsDown(this, new KeyEventArgs(keyData));
+                return true; // mark as handled
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+        private int initialInterval = 60;  // starting speed
+        private int speedIncrement = 5;     // decrease per food
 
     }
 }
