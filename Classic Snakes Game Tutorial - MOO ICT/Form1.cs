@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Media;
 
 using System.Drawing.Imaging; // add this for the JPG compressor
+using System.IO; // add this for the JPG compressor
 
 namespace OOPETRIS
 {
@@ -390,4 +391,5 @@ catch (Exception ex)
 
     }
 }
+
 
