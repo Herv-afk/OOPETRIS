@@ -300,34 +300,39 @@ namespace OOPETRIS
         private void EatFood()
         {
             score += 1;
+txtScore.Text = "Score: " + score;
 
-            txtScore.Text = "Score: " + score;
+Circle body = new Circle
+{
+    X = Snake[Snake.Count - 1].X,
+    Y = Snake[Snake.Count - 1].Y
+};
 
-            Circle body = new Circle
-            {
-                X = Snake[Snake.Count - 1].X,
-                Y = Snake[Snake.Count - 1].Y
-            };
+Snake.Add(body);
 
-            Snake.Add(body);
+food = new Circle { X = rand.Next(2, maxWidth), Y = rand.Next(2, maxHeight) };
 
-            food = new Circle { X = rand.Next(2, maxWidth), Y = rand.Next(2, maxHeight) };
-            if (gameTimer.Interval > 30) // minimum speed
-            {
-                gameTimer.Interval -= speedIncrement;
-            }
-            // Play eat sound effect
-            try
-            {
-                string soundPath = @"C:\Users\MSI-Pc\Downloads\food_G1U6tlb.wav"; // full path
-                SoundPlayer eatSound = new SoundPlayer(soundPath);
-                eatSound.Play(); // plays once asynchronously
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Eat sound not found: " + ex.Message);
-            }
+if (gameTimer.Interval > 30) // minimum speed
+{
+    gameTimer.Interval -= speedIncrement;
+}
 
+// Play eat sound effect using relative path
+try
+{
+    string soundPath = Path.Combine(
+        Application.StartupPath,
+        "Sounds",
+        "food_G1U6tlb.wav"
+    );
+
+    SoundPlayer eatSound = new SoundPlayer(soundPath);
+    eatSound.Play();
+}
+catch (Exception ex)
+{
+    MessageBox.Show("Eat sound not found: " + ex.Message);
+}
         }
 
         private void GameOver()
@@ -385,3 +390,4 @@ namespace OOPETRIS
 
     }
 }
+
