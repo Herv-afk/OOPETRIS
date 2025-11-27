@@ -1,15 +1,24 @@
-﻿using WMPLib;
+using WMPLib;
+using System.IO;
+using System.Windows.Forms;
 
 public static class MusicPlayer
 {
-    public static WindowsMediaPlayer backgroundPlayer;
+    private static WindowsMediaPlayer backgroundPlayer;
 
     public static void StartMusic()
     {
         if (backgroundPlayer == null)
         {
             backgroundPlayer = new WindowsMediaPlayer();
-            backgroundPlayer.URL = @"C:\Users\MSI-Pc\Downloads\game-gaming-minecraft-background-music-377647.mp3"; // include extension
+
+            string musicPath = Path.Combine(
+                Application.StartupPath,
+                "Sounds",
+                "game-gaming-minecraft-background-music-377647.wav"
+            );
+
+            backgroundPlayer.URL = musicPath;
             backgroundPlayer.settings.setMode("loop", true);
             backgroundPlayer.controls.play();
         }
@@ -17,13 +26,21 @@ public static class MusicPlayer
 
     public static void PlayEatSound()
     {
-        WindowsMediaPlayer effect = new WindowsMediaPlayer();
-        effect.URL = @"C:\Users\MSI-Pc\Downloads\food_G1U6tlb.wav";
-        effect.controls.play();
+        string effectPath = Path.Combine(
+            Application.StartupPath,
+            "Sounds",
+            "food_G1U6tlb.wav"
+        );
+
+        WindowsMediaPlayer sfx = new WindowsMediaPlayer();
+        sfx.URL = effectPath;
+        sfx.controls.play();
     }
 
     public static void StopMusic()
     {
-        if (backgroundPlayer != null) backgroundPlayer.controls.stop();
+        if (backgroundPlayer != null)
+            backgroundPlayer.controls.stop();
     }
 }
+
